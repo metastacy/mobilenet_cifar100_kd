@@ -8,3 +8,4 @@ The repository contains 3 .py files:
 - Knowledge distillation from ResNet50 to MobileNet (achieves 0.71% accuracy).
 
 The DKD code was obtained from the mdistiller repo - https://github.com/megvii-research/mdistiller
+The pre-trained ResNet50 was obtained from - https://huggingface.co/edadaltocg/resnet50_cifar100
