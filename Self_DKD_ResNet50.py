@@ -10,6 +10,7 @@ import math
 from torch.optim.lr_scheduler import CosineAnnealingLR
 import warnings
 import timm
+import detectors
 
 warnings.filterwarnings('ignore')
 
@@ -29,7 +30,7 @@ train_loader = torch.utils.data.DataLoader(
                                torchvision.transforms.Normalize(
                                 mean=[0.507, 0.487, 0.441], std=[0.267, 0.256, 0.276])
                              ])),
-  batch_size=100, shuffle=True)
+  batch_size=128, shuffle=True)
 
 test_loader = torch.utils.data.DataLoader(
   torchvision.datasets.CIFAR100('cifar-100', train=False, download=True,
@@ -39,7 +40,6 @@ test_loader = torch.utils.data.DataLoader(
                                 mean=[0.507, 0.487, 0.441], std=[0.267, 0.256, 0.276])
                              ])),
   batch_size=1000, shuffle=True)
-
 
 # ------------------------------------------------------------------------------
 
@@ -106,25 +106,21 @@ def dkd_loss(logits_student, logits_teacher, target, alpha, beta, temperature):
     )
     return alpha * tckd_loss + beta * nckd_loss
 
-
 def _get_gt_mask(logits, target):
     target = target.reshape(-1)
     mask = torch.zeros_like(logits).scatter_(1, target.unsqueeze(1), 1).bool()
     return mask
-
 
 def _get_other_mask(logits, target):
     target = target.reshape(-1)
     mask = torch.ones_like(logits).scatter_(1, target.unsqueeze(1), 0).bool()
     return mask
 
-
 def cat_mask(t, mask1, mask2):
     t1 = (t * mask1).sum(dim=1, keepdims=True)
     t2 = (t * mask2).sum(1, keepdims=True)
     rt = torch.cat([t1, t2], dim=1)
     return rt
-
 
 class DKD(Distiller):
     """Decoupled Knowledge Distillation(CVPR 2022)"""
@@ -157,7 +153,6 @@ class DKD(Distiller):
             "loss_kd": loss_dkd,
         }
         return logits_student, losses_dict
-
 
 # ------------------------------------------------------------------------------
 
